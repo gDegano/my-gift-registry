@@ -490,7 +490,7 @@
         ? `<img class="card__img" src="${esc(gift['ImageURL'])}" alt="${esc(gift['Name'])}" loading="lazy" onerror="this.style.display='none'">`
         : `<div class="card__img-placeholder">🎁</div>`;
 
-      const priceHtml = gift["Price"]
+      const priceHtml = gift["Price (CHF)"]
         ? `<p class="card__price">${esc(gift['Price'])}</p>` : "";
 
       const footerHtml = claimed
@@ -511,6 +511,7 @@
           <p class="card__name">${esc(gift['Name'])}</p>
           ${gift['Description'] ? `<p class="card__desc">${esc(gift['Description'])}</p>` : ""}
           ${priceHtml}
+          ${gift['URL'] ? `<a href="${esc(gift['URL'])}" target="_blank" rel="noopener" style="font-size:12.5px; color:var(--gold); text-decoration:none; letter-spacing:0.05em;">View product ↗</a>` : ""}
         </div>
         <div class="card__footer">${footerHtml}</div>
       `;
