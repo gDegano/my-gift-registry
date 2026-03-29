@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gift Registry</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CONFIG ────────────────────────────────────────────── */
+    :root {
+      --bg:        #0f1410;
+      --surface:   #181f19;
+      --border:    #2a3a2b;
+      --gold:      #c9a84c;
+      --gold-lt:   #e8cA7a;
+      --cream:     #f0ead8;
+      --muted:     #7a8c7b;
+      --claimed-bg:#111811;
+      --radius:    12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── BACKGROUND TEXTURE ──────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 60% at 80% 90%, rgba(201,168,76,0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────── */
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 72px 24px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-label {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.1s;
+    }
+
+    header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--cream);
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.25s;
+    }
+
+    header h1 em {
+      font-style: italic;
+      color: var(--gold-lt);
+    }
+
+    .header-sub {
+      margin-top: 20px;
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 440px;
+      margin-inline: auto;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+
+    .ornament {
+      display: block;
+      margin: 24px auto 0;
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.5s;
+    }
+
+    /* ─── GRID ───────────────────────────────────────────── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    #gift-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    /* ─── CARD ───────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .card:hover:not(.card--claimed) {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(201,168,76,0.15);
+    }
+
+    .card--claimed {
+      background: var(--claimed-bg);
+      border-color: #1f2c20;
+      opacity: 0.7 !important;
+    }
+
+    .card__img {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card__img-placeholder {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: #1a241b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+
+    .card__body {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card__name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1.25;
+    }
+
+    .card__desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    .card__price {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+
+    .card__footer {
+      padding: 0 24px 24px;
+    }
+
+    /* ─── BUTTONS ────────────────────────────────────────── */
+    .btn {
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      transition: all 0.25s;
+    }
+
+    .btn--claim {
+      background: var(--gold);
+      color: #0f1410;
+    }
+    .btn--claim:hover {
+      background: var(--gold-lt);
+      box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+    }
+
+    .btn--claimed {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn--claimed svg {
+      width: 14px; height: 14px;
+      stroke: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ─── CLAIMED BADGE ──────────────────────────────────── */
+    .claimed-badge {
+      font-size: 11.5px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* ─── MODAL ──────────────────────────────────────────── */
+    #modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-backdrop.open {
+      display: flex;
+    }
+
+    #modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: min(480px, 92vw);
+      animation: scaleIn 0.25s ease;
+    }
+
+    @keyframes scaleIn {
+      from { opacity:0; transform: scale(0.94); }
+      to   { opacity:1; transform: scale(1); }
+    }
+
+    #modal h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 6px;
+    }
+
+    #modal .modal-gift-name {
+      font-size: 13px;
+      color: var(--gold);
+      margin-bottom: 24px;
+      letter-spacing: 0.05em;
+    }
+
+    #modal label {
+      display: block;
+      font-size: 11.5px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    #modal input {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--cream);
+      font-family: 'Jost', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 20px;
+    }
+    #modal input:focus {
+      border-color: var(--gold);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn--confirm {
+      flex: 1;
+      background: var(--gold);
+      color: #0f1410;
+    }
+    .btn--confirm:hover {
+      background: var(--gold-lt);
+    }
+    .btn--confirm:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn--cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn--cancel:hover {
+      border-color: var(--muted);
+      color: var(--cream);
+    }
+
+    /* ─── STATES ─────────────────────────────────────────── */
+    #loading, #error-msg {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    /* ─── TOAST ──────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--gold);
+      color: #0f1410;
+      padding: 12px 28px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 200;
+      white-space: nowrap;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ─── ANIMATIONS ─────────────────────────────────────── */
+    @keyframes fadeUp {
+      to { opacity:1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 600px) {
+      header { padding: 48px 20px 36px; }
+      main { padding: 40px 16px 60px; }
+      #gift-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ═══════════════════════════════════════════════ -->
+<header>
+  <p class="header-label">✦ Gift Registry ✦</p>
+  <h1 id="page-title">Choose a <em>gift</em></h1>
+  <p class="header-sub" id="page-subtitle">
+    Pick something from the list below. Once you claim it, it will be reserved for you.
+  </p>
+  <span class="ornament"></span>
+</header>
+
+<!-- ══ GIFT GRID ═════════════════════════════════════════════ -->
+<main>
+  <div id="loading">
+    <div class="spinner"></div>
+    Loading gifts…
+  </div>
+  <div id="error-msg" style="display:none"></div>
+  <div id="gift-grid" style="display:none"></div>
+</main>
+
+<!-- ══ MODAL ═════════════════════════════════════════════════ -->
+<div id="modal-backdrop">
+  <div id="modal" role="dialog" aria-modal="true">
+    <h2>Reserve this gift</h2>
+    <p class="modal-gift-name" id="modal-gift-name"></p>
+    <label for="name-input">Your name</label>
+    <input type="text" id="name-input" placeholder="e.g. Maria" autocomplete="off" />
+    <div class="modal-actions">
+      <button class="btn btn--cancel" id="modal-cancel">Cancel</button>
+      <button class="btn btn--confirm" id="modal-confirm">Reserve it!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<script>
+  // ╔══════════════════════════════════════════════════════════╗
+  //  🔧 CONFIGURATION — update this URL after deploying Script
+  // ╚══════════════════════════════════════════════════════════╝
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvYk0io91qjPEf-UYYlrarH2atPC2Rrq3W6gw609RzSXxbNR8iETsvMg9Pun6ugOub2w/exec";
+
+  // ── Optional page customisation ──────────────────────────
+  document.getElementById("page-title").innerHTML = 'Choose a <em>gift</em>';
+  document.getElementById("page-subtitle").textContent =
+    "Pick something from the list below. Once you claim it, it'll be reserved just for you!";
+
+  // ─── State ──────────────────────────────────────────────
+  let gifts = [];
+  let pendingRow = null;
+
+  // ─── DOM refs ───────────────────────────────────────────
+  const grid        = document.getElementById("gift-grid");
+  const loading     = document.getElementById("loading");
+  const errorMsg    = document.getElementById("error-msg");
+  const backdrop    = document.getElementById("modal-backdrop");
+  const modalName   = document.getElementById("modal-gift-name");
+  const nameInput   = document.getElementById("name-input");
+  const confirmBtn  = document.getElementById("modal-confirm");
+  const cancelBtn   = document.getElementById("modal-cancel");
+  const toast       = document.getElementById("toast");
+
+  // ─── Load gifts ──────────────────────────────────────────
+  async function loadGifts() {
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL);
+      const data = await res.json();
+      gifts = data.gifts;
+      renderGifts();
+    } catch (e) {
+      loading.style.display = "none";
+      errorMsg.style.display = "block";
+      errorMsg.innerHTML = `
+        <p style="margin-bottom:12px">⚠️ Could not load the gift list.</p>
+        <p style="font-size:13px">Make sure the Apps Script URL is set correctly in index.html.</p>
+      `;
+    }
+  }
+
+  // ─── Render ───────────────────────────────────────────────
+  function renderGifts() {
+    loading.style.display  = "none";
+    grid.style.display     = "grid";
+    grid.innerHTML         = "";
+
+    gifts.forEach((gift, i) => {
+      const claimed  = gift["ClaimedBy"] && gift["ClaimedBy"].toString().trim() !== "";
+      const card     = document.createElement("div");
+      card.className = "card" + (claimed ? " card--claimed" : "");
+      card.style.animationDelay = (i * 0.07) + "s";
+
+      const imgHtml = gift["ImageURL"]
+        ? `<img class="card__img" src="${esc(gift['ImageURL'])}" alt="${esc(gift['Name'])}" loading="lazy" onerror="this.style.display='none'">`
+        : `<div class="card__img-placeholder">🎁</div>`;
+
+      const priceHtml = gift["Price"]
+        ? `<p class="card__price">${esc(gift['Price'])}</p>` : "";
+
+      const footerHtml = claimed
+        ? `<button class="btn btn--claimed" disabled>
+             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M20 6L9 17l-5-5"/>
+             </svg>
+             Reserved
+           </button>
+           <p class="claimed-badge">By ${esc(gift['ClaimedBy'])}</p>`
+        : `<button class="btn btn--claim" data-row="${gift['_row']}" data-name="${esc(gift['Name'])}">
+             I'll give this! ✦
+           </button>`;
+
+      card.innerHTML = `
+        ${imgHtml}
+        <div class="card__body">
+          <p class="card__name">${esc(gift['Name'])}</p>
+          ${gift['Description'] ? `<p class="card__desc">${esc(gift['Description'])}</p>` : ""}
+          ${priceHtml}
+        </div>
+        <div class="card__footer">${footerHtml}</div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    // Claim button listeners
+    grid.querySelectorAll(".btn--claim").forEach(btn => {
+      btn.addEventListener("click", () => openModal(btn.dataset.row, btn.dataset.name));
+    });
+  }
+
+  // ─── Modal ────────────────────────────────────────────────
+  function openModal(row, name) {
+    pendingRow  = row;
+    modalName.textContent = name;
+    nameInput.value = "";
+    backdrop.classList.add("open");
+    nameInput.focus();
+  }
+
+  function closeModal() {
+    backdrop.classList.remove("open");
+    pendingRow = null;
+  }
+
+  cancelBtn.addEventListener("click", closeModal);
+  backdrop.addEventListener("click", e => { if (e.target === backdrop) closeModal(); });
+  nameInput.addEventListener("keydown", e => { if (e.key === "Enter") confirmBtn.click(); });
+
+  confirmBtn.addEventListener("click", async () => {
+    const name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Reserving…";
+
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ row: pendingRow, claimedBy: name }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        closeModal();
+        showToast("🎁 Reserved! Thank you, " + name + "!");
+        await loadGifts(); // refresh
+      } else {
+        showToast("⚠️ " + (data.error || "Something went wrong."));
+        closeModal();
+        await loadGifts();
+      }
+    } catch {
+      showToast("⚠️ Network error. Please try again.");
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Reserve it!";
+    }
+  });
+
+  // ─── Toast ────────────────────────────────────────────────
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3500);
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────
+  function esc(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // ─── Init ─────────────────────────────────────────────────
+  loadGifts();
+</script>
+</body>
+</html>
